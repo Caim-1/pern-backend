@@ -2,7 +2,7 @@ import { RequestHandler } from "express";
 import pool from "../dbConfig";
 
 // @desc  Get single forum
-// @route GET /api/forums/:id
+// @route GET /api/forums/name/:id
 export const getForum: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
 
@@ -31,6 +31,45 @@ export const getForums: RequestHandler = async (req, res, next) => {
     }
 
     res.status(404).json({ message: "No forums were found." });
+  } catch (error: any) {
+    console.log(error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc  Get all forum subscribers
+// @route GET /api/forums/subscribers
+export const getSubscribers: RequestHandler = async (req, res, next) => {
+  try {
+    const allSubscribers = await pool.query("SELECT * FROM forum_user");
+
+    if (allSubscribers.rows.length > 0) {
+      return res.status(200).json(allSubscribers.rows);
+    }
+
+    res.status(404).json({ message: "No subscribers were found." });
+  } catch (error: any) {
+    console.log(error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc  Get forum subscriber by forum and user id
+// @route GET /api/forums/subscribers/:forumId/:userId
+export const getSubscriberByIds: RequestHandler = async (req, res, next) => {
+  const { forumId, userId } = req.params;
+
+  try {
+    const allSubscribers = await pool.query("SELECT * FROM forum_user WHERE forum_id = $1 AND user_id = $2", [
+      forumId,
+      userId,
+    ]);
+
+    if (allSubscribers.rows.length > 0) {
+      return res.status(200).json(allSubscribers.rows[0]);
+    }
+
+    res.status(404).json({ message: "No subscriber was found." });
   } catch (error: any) {
     console.log(error);
     return res.status(500).json({ message: error.message });
@@ -110,7 +149,7 @@ export const updateForum: RequestHandler = async (req, res, next) => {
 };
 
 // @desc  Delete forum
-// @route DELETE /api/forums/:id
+// @route DELETE /api/forums/name/:id
 export const deleteForum: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
 
@@ -122,6 +161,28 @@ export const deleteForum: RequestHandler = async (req, res, next) => {
     }
 
     res.status(404).json({ message: "Forum not found." });
+  } catch (error: any) {
+    console.log(error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc  Delete forumUser relationship (Forum subscriber)
+// @route DELETE /api/forums/user/unsubscribe
+export const unsubscribeFromForum: RequestHandler = async (req, res, next) => {
+  const { forumId, userId } = req.body;
+
+  try {
+    const deletedForum = await pool.query("DELETE FROM forum_user WHERE forum_id = $1 AND user_id = $2 RETURNING *", [
+      forumId,
+      userId,
+    ]);
+
+    if (deletedForum.rows.length > 0) {
+      return res.status(200).json({ message: "The relation was successfully deleted." });
+    }
+
+    res.status(404).json({ message: "Relation not found." });
   } catch (error: any) {
     console.log(error);
     return res.status(500).json({ message: error.message });
