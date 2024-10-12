@@ -1,13 +1,32 @@
 import { RequestHandler } from "express";
 import pool from "../dbConfig";
 
-// @desc  Get single forum
-// @route GET /api/forums/name/:id
-export const getForum: RequestHandler = async (req, res, next) => {
+// @desc  Get forum by id
+// @route GET /api/forums/id/:id
+export const getForumById: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
 
   try {
-    const forum = await pool.query("SELECT * FROM forums WHERE name = $1", [id]);
+    const forum = await pool.query("SELECT * FROM forums WHERE id = $1", [id]);
+
+    if (forum.rows.length > 0) {
+      return res.status(200).json(forum.rows[0]);
+    }
+
+    res.status(404).json({ message: "Forum not found." });
+  } catch (error: any) {
+    console.log(error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc  Get forum by name
+// @route GET /api/forums/name/:name
+export const getForumByName: RequestHandler = async (req, res, next) => {
+  const { name } = req.params;
+
+  try {
+    const forum = await pool.query("SELECT * FROM forums WHERE name = $1", [name]);
 
     if (forum.rows.length > 0) {
       return res.status(200).json(forum.rows[0]);
@@ -37,7 +56,7 @@ export const getForums: RequestHandler = async (req, res, next) => {
   }
 };
 
-// @desc  Get all forum subscribers
+// @desc  Get all forum_user relations (forum subscribers)
 // @route GET /api/forums/subscribers
 export const getSubscribers: RequestHandler = async (req, res, next) => {
   try {
@@ -54,7 +73,26 @@ export const getSubscribers: RequestHandler = async (req, res, next) => {
   }
 };
 
-// @desc  Get forum subscriber by forum and user id
+// @desc  Get all forum_user relations (forum subscribers) by user id
+// @route GET /api/forums/subscribers/user/:userId
+export const getForumUsersByUserId: RequestHandler = async (req, res, next) => {
+  const { userId } = req.params;
+
+  try {
+    const relations = await pool.query("SELECT * FROM forum_user WHERE user_id = $1", [userId]);
+
+    if (relations.rows.length > 0) {
+      return res.status(200).json(relations.rows);
+    }
+
+    res.status(404).json({ message: "No relations found." });
+  } catch (error: any) {
+    console.log(error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc  Get one forum_user relation (forum subscriber) by forum and user id
 // @route GET /api/forums/subscribers/:forumId/:userId
 export const getSubscriberByIds: RequestHandler = async (req, res, next) => {
   const { forumId, userId } = req.params;
@@ -98,7 +136,7 @@ export const createForum: RequestHandler = async (req, res, next) => {
   }
 };
 
-// @desc  Create forumUser relationship (Forum subscriber)
+// @desc  Create forum_user relation (forum subscriber)
 // @route POST /api/forums/user/subscribe
 export const subscribeToForum: RequestHandler = async (req, res, next) => {
   const { forumId, userId } = req.body;
@@ -167,7 +205,7 @@ export const deleteForum: RequestHandler = async (req, res, next) => {
   }
 };
 
-// @desc  Delete forumUser relationship (Forum subscriber)
+// @desc  Delete forum_user relation (forum subscriber)
 // @route DELETE /api/forums/user/unsubscribe
 export const unsubscribeFromForum: RequestHandler = async (req, res, next) => {
   const { forumId, userId } = req.body;
