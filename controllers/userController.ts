@@ -70,7 +70,8 @@ export const getUsersLikedPostsById: RequestHandler = async (req, res, next) => 
       return res.status(200).json(allRelations.rows);
     }
 
-    res.status(404).json({ message: "No relations were found." });
+    res.status(200).json([]);
+    // res.status(404).json({ message: "No relations were found." });
   } catch (error: any) {
     console.log(error);
     return res.status(500).json({ message: error.message });
@@ -109,7 +110,8 @@ export const getUsersDislikedPostsById: RequestHandler = async (req, res, next) 
       return res.status(200).json(allRelations.rows);
     }
 
-    res.status(404).json({ message: "No relations were found." });
+    res.status(200).json([]);
+    // res.status(404).json({ message: "No relations were found." });
   } catch (error: any) {
     console.log(error);
     return res.status(500).json({ message: error.message });
