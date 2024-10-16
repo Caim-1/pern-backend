@@ -6,6 +6,7 @@ import {
   getForumById,
   getForumByName,
   getForums,
+  getForumUsersByForumId,
   getForumUsersByUserId,
   getSubscriberByIds,
   getSubscribers,
@@ -27,6 +28,9 @@ router.get("/name/:name", getForumByName);
 
 // Get all forum_user relations (forum subscribers)
 router.get("/subscribers", getSubscribers);
+
+// Get all forum_user relations (forum subscribers) by forum id
+router.get("/subscribers/forum/:forumId", getForumUsersByForumId);
 
 // Get all forum_user relations (forum subscribers) by user id
 router.get("/subscribers/user/:userId", getForumUsersByUserId);

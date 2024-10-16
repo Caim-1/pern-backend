@@ -73,6 +73,25 @@ export const getSubscribers: RequestHandler = async (req, res, next) => {
   }
 };
 
+// @desc  Get all forum_user relations (forum subscribers) by forum id
+// @route GET /api/forums/subscribers/forum/:forumId
+export const getForumUsersByForumId: RequestHandler = async (req, res, next) => {
+  const { forumId } = req.params;
+
+  try {
+    const relations = await pool.query("SELECT * FROM forum_user WHERE forum_id = $1", [forumId]);
+
+    if (relations.rows.length > 0) {
+      return res.status(200).json(relations.rows);
+    }
+
+    res.status(404).json({ message: "No relations found." });
+  } catch (error: any) {
+    console.log(error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
 // @desc  Get all forum_user relations (forum subscribers) by user id
 // @route GET /api/forums/subscribers/user/:userId
 export const getForumUsersByUserId: RequestHandler = async (req, res, next) => {
